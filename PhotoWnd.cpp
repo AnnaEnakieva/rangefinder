@@ -1,30 +1,23 @@
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
-// Copyright (c) Microsoft Corporation. All rights reserved.
-
 #include "Capture.h"
 
 extern CaptureManager *g_pEngine;
 
 // Implements the window procedure for the video preview window.
 
-namespace PhotoWnd//даем имя функции
+namespace PhotoWnd//РґР°РµРј РёРјСЏ С„СѓРЅРєС†РёРё
 {
-	HINSTANCE hInst = NULL;//код оконной процедуры, по которой ос будет отличать ее от других
-	HBITMAP hPhotoBitmap;//место, куда мы сохраним картинку
+	HINSTANCE hInst = NULL;//РєРѕРґ РѕРєРѕРЅРЅРѕР№ РїСЂРѕС†РµРґСѓСЂС‹, РїРѕ РєРѕС‚РѕСЂРѕР№ РѕСЃ Р±СѓРґРµС‚ РѕС‚Р»РёС‡Р°С‚СЊ РµРµ РѕС‚ РґСЂСѓРіРёС…
+	HBITMAP hPhotoBitmap;//РјРµСЃС‚Рѕ, РєСѓРґР° РјС‹ СЃРѕС…СЂР°РЅРёРј РєР°СЂС‚РёРЅРєСѓ
 
-	HBRUSH hBackgroundBrush = 0;//кисть
+	HBRUSH hBackgroundBrush = 0;//РєРёСЃС‚СЊ
 
-	// высококонтрастный пиксель
+	// РІС‹СЃРѕРєРѕРєРѕРЅС‚СЂР°СЃС‚РЅС‹Р№ РїРёРєСЃРµР»СЊ
 	int hcPixelX = 0;
 	int hcPixelY = 0;
 	int BytesPerPixel = 0;
 
-	BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)//HWND -уникальный номер для окна,
-		//LPCREATESTRUCT - используется в обработке соответствующего WM_CREATE, указатель приходит в IPAraum
+	BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)//HWND -СѓРЅРёРєР°Р»СЊРЅС‹Р№ РЅРѕРјРµСЂ РґР»СЏ РѕРєРЅР°,
+		//LPCREATESTRUCT - РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ РѕР±СЂР°Р±РѕС‚РєРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРіРѕ WM_CREATE, СѓРєР°Р·Р°С‚РµР»СЊ РїСЂРёС…РѕРґРёС‚ РІ IPAraum
 	{
 		hBackgroundBrush = CreateSolidBrush(RGB(128, 128, 128));
 		return (hBackgroundBrush != NULL);
@@ -42,16 +35,16 @@ namespace PhotoWnd//даем имя функции
 
 	void OnPaint(HWND hwnd)
 	{
-		PAINTSTRUCT ps;// информация для приложения, используется для рисования клиентской области окна
-		HDC hdc = BeginPaint(hwnd, &ps);//DC для рисования
+		PAINTSTRUCT ps;// РёРЅС„РѕСЂРјР°С†РёСЏ РґР»СЏ РїСЂРёР»РѕР¶РµРЅРёСЏ, РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ СЂРёСЃРѕРІР°РЅРёСЏ РєР»РёРµРЅС‚СЃРєРѕР№ РѕР±Р»Р°СЃС‚Рё РѕРєРЅР°
+		HDC hdc = BeginPaint(hwnd, &ps);//DC РґР»СЏ СЂРёСЃРѕРІР°РЅРёСЏ
 
 		FillRect(hdc, &ps.rcPaint, hBackgroundBrush);
 
-		if (hPhotoBitmap)//получение фотографии
+		if (hPhotoBitmap)//РїРѕР»СѓС‡РµРЅРёРµ С„РѕС‚РѕРіСЂР°С„РёРё
 		{
-			BITMAP          bitmap;//сохраняем картинку
-			HDC             hdcMem;//для рисования
-			HGDIOBJ         oldBitmap;//тип 
+			BITMAP          bitmap;//СЃРѕС…СЂР°РЅСЏРµРј РєР°СЂС‚РёРЅРєСѓ
+			HDC             hdcMem;//РґР»СЏ СЂРёСЃРѕРІР°РЅРёСЏ
+			HGDIOBJ         oldBitmap;//С‚РёРї 
 			RECT rc;
 
 			int x1, y1, cx, cy;
@@ -61,26 +54,26 @@ namespace PhotoWnd//даем имя функции
 			TCHAR szMessage[80];				// To print message 
 			int strLen;
 
-			GetClientRect(hwnd, &rc);//извлекает координаты рабочей области окна 
-			cx = rc.right - rc.left;//подсчет ширины
-			cy = rc.bottom - rc.top;//посчет длины
+			GetClientRect(hwnd, &rc);//РёР·РІР»РµРєР°РµС‚ РєРѕРѕСЂРґРёРЅР°С‚С‹ СЂР°Р±РѕС‡РµР№ РѕР±Р»Р°СЃС‚Рё РѕРєРЅР° 
+			cx = rc.right - rc.left;//РїРѕРґСЃС‡РµС‚ С€РёСЂРёРЅС‹
+			cy = rc.bottom - rc.top;//РїРѕСЃС‡РµС‚ РґР»РёРЅС‹
 
-			hdcMem = CreateCompatibleDC(hdc);//CreateCompatibleDC-расстровое изображение
+			hdcMem = CreateCompatibleDC(hdc);//CreateCompatibleDC-СЂР°СЃСЃС‚СЂРѕРІРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
 
 			if (hdcMem) {
 
 				// draw photo
-				oldBitmap = SelectObject(hdcMem, hPhotoBitmap);// SelectObject-выделяет объект в указанном контексте устройства.
-				//новый объект заменяет предыдущий того же типа
+				oldBitmap = SelectObject(hdcMem, hPhotoBitmap);// SelectObject-РІС‹РґРµР»СЏРµС‚ РѕР±СЉРµРєС‚ РІ СѓРєР°Р·Р°РЅРЅРѕРј РєРѕРЅС‚РµРєСЃС‚Рµ СѓСЃС‚СЂРѕР№СЃС‚РІР°.
+				//РЅРѕРІС‹Р№ РѕР±СЉРµРєС‚ Р·Р°РјРµРЅСЏРµС‚ РїСЂРµРґС‹РґСѓС‰РёР№ С‚РѕРіРѕ Р¶Рµ С‚РёРїР°
 
-				GetObject(hPhotoBitmap, sizeof(bitmap), &bitmap);//получение фото
+				GetObject(hPhotoBitmap, sizeof(bitmap), &bitmap);//РїРѕР»СѓС‡РµРЅРёРµ С„РѕС‚Рѕ
 
-				// рассчитать, как размер изображения превышает окно
-				if (cx < bitmap.bmWidth)//если ширина картинки меньше ширины окна 
+				// СЂР°СЃСЃС‡РёС‚Р°С‚СЊ, РєР°Рє СЂР°Р·РјРµСЂ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РїСЂРµРІС‹С€Р°РµС‚ РѕРєРЅРѕ
+				if (cx < bitmap.bmWidth)//РµСЃР»Рё С€РёСЂРёРЅР° РєР°СЂС‚РёРЅРєРё РјРµРЅСЊС€Рµ С€РёСЂРёРЅС‹ РѕРєРЅР° 
 				{
 					deltax = bitmap.bmWidth - cx;
 				}
-				if (cy < bitmap.bmHeight)//если длина картинки меньше длины окна 
+				if (cy < bitmap.bmHeight)//РµСЃР»Рё РґР»РёРЅР° РєР°СЂС‚РёРЅРєРё РјРµРЅСЊС€Рµ РґР»РёРЅС‹ РѕРєРЅР° 
 				{
 					deltay = bitmap.bmHeight - cy;
 				}
@@ -90,17 +83,17 @@ namespace PhotoWnd//даем имя функции
 				new_height = bitmap.bmHeight - delta;
 
 				// center of the window
-				// поиск центра окна и расположение картинки по центру
+				// РїРѕРёСЃРє С†РµРЅС‚СЂР° РѕРєРЅР° Рё СЂР°СЃРїРѕР»РѕР¶РµРЅРёРµ РєР°СЂС‚РёРЅРєРё РїРѕ С†РµРЅС‚СЂСѓ
 				x1 = cx / 2;
 				y1 = cy / 2;
 
-				//поиск серединного пикселя
+				//РїРѕРёСЃРє СЃРµСЂРµРґРёРЅРЅРѕРіРѕ РїРёРєСЃРµР»СЏ
 				x1 = x1 - new_width / 2;
 				y1 = y1 - new_height / 2;
 
-				int nOldMode = SetStretchBltMode(hdc, COLORONCOLOR);// устанавливает режим расстрового изображения
-				//в указательном контексте устройства
-				StretchBlt(//изменяет размер изображения
+				int nOldMode = SetStretchBltMode(hdc, COLORONCOLOR);// СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЂРµР¶РёРј СЂР°СЃСЃС‚СЂРѕРІРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+				//РІ СѓРєР°Р·Р°С‚РµР»СЊРЅРѕРј РєРѕРЅС‚РµРєСЃС‚Рµ СѓСЃС‚СЂРѕР№СЃС‚РІР°
+				StretchBlt(//РёР·РјРµРЅСЏРµС‚ СЂР°Р·РјРµСЂ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 					hdc,
 					x1, y1,
 					new_width,
@@ -117,29 +110,29 @@ namespace PhotoWnd//даем имя функции
 				// write pixel coordinates
 				strLen = wsprintf(szMessage, TEXT("High contrast pixel: x=%i y=%i"), hcPixelX, hcPixelY);
 
-				SetTextColor(hdc, RGB(255, 0, 0));//рисовка символов
-				SetBkMode(hdc, TRANSPARENT);// устанавливает фоновый режим смешивания контекста заданного устройства. 
-				//Фоновый режим смешивания используется текстом, кистями для штриховки и стилями пера, которые не являются
-				//сплошными линиями. делает окна такого же цвета, что и фон
+				SetTextColor(hdc, RGB(255, 0, 0));//СЂРёСЃРѕРІРєР° СЃРёРјРІРѕР»РѕРІ
+				SetBkMode(hdc, TRANSPARENT);// СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С„РѕРЅРѕРІС‹Р№ СЂРµР¶РёРј СЃРјРµС€РёРІР°РЅРёСЏ РєРѕРЅС‚РµРєСЃС‚Р° Р·Р°РґР°РЅРЅРѕРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР°. 
+				//Р¤РѕРЅРѕРІС‹Р№ СЂРµР¶РёРј СЃРјРµС€РёРІР°РЅРёСЏ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С‚РµРєСЃС‚РѕРј, РєРёСЃС‚СЏРјРё РґР»СЏ С€С‚СЂРёС…РѕРІРєРё Рё СЃС‚РёР»СЏРјРё РїРµСЂР°, РєРѕС‚РѕСЂС‹Рµ РЅРµ СЏРІР»СЏСЋС‚СЃСЏ
+				//СЃРїР»РѕС€РЅС‹РјРё Р»РёРЅРёСЏРјРё. РґРµР»Р°РµС‚ РѕРєРЅР° С‚Р°РєРѕРіРѕ Р¶Рµ С†РІРµС‚Р°, С‡С‚Рѕ Рё С„РѕРЅ
 
 
 
-				TextOut(hdc, 5, 5, szMessage, strLen);//записывает строку символов в заданном месте, используя текущий выбранный 
-				//шрифт, цвет фона и цвет текста,5 и 5-количество пикселей, которые мы отступаем 
+				TextOut(hdc, 5, 5, szMessage, strLen);//Р·Р°РїРёСЃС‹РІР°РµС‚ СЃС‚СЂРѕРєСѓ СЃРёРјРІРѕР»РѕРІ РІ Р·Р°РґР°РЅРЅРѕРј РјРµСЃС‚Рµ, РёСЃРїРѕР»СЊР·СѓСЏ С‚РµРєСѓС‰РёР№ РІС‹Р±СЂР°РЅРЅС‹Р№ 
+				//С€СЂРёС„С‚, С†РІРµС‚ С„РѕРЅР° Рё С†РІРµС‚ С‚РµРєСЃС‚Р°,5 Рё 5-РєРѕР»РёС‡РµСЃС‚РІРѕ РїРёРєСЃРµР»РµР№, РєРѕС‚РѕСЂС‹Рµ РјС‹ РѕС‚СЃС‚СѓРїР°РµРј 
 
 
-				DeleteDC(hdcMem);// удаление вспомогательных инструментов из памяти
+				DeleteDC(hdcMem);// СѓРґР°Р»РµРЅРёРµ РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹С… РёРЅСЃС‚СЂСѓРјРµРЅС‚РѕРІ РёР· РїР°РјСЏС‚Рё
 			}
 		}
 		EndPaint(hwnd, &ps);
 	}
 
 
-	void OnSize(HWND hwnd, UINT state, int /*cx*/, int /*cy*/)//для дочерних окон
+	void OnSize(HWND hwnd, UINT state, int /*cx*/, int /*cy*/)//РґР»СЏ РґРѕС‡РµСЂРЅРёС… РѕРєРѕРЅ
 	{
-		if (state == SIZE_RESTORED)//окно измененно
+		if (state == SIZE_RESTORED)//РѕРєРЅРѕ РёР·РјРµРЅРµРЅРЅРѕ
 		{
-			InvalidateRect(hwnd, NULL, FALSE);//добавляем прямоугольник к обновляемому региону заданного окна
+			InvalidateRect(hwnd, NULL, FALSE);//РґРѕР±Р°РІР»СЏРµРј РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє Рє РѕР±РЅРѕРІР»СЏРµРјРѕРјСѓ СЂРµРіРёРѕРЅСѓ Р·Р°РґР°РЅРЅРѕРіРѕ РѕРєРЅР°
 		}
 	}
 
@@ -164,24 +157,7 @@ namespace PhotoWnd//даем имя функции
 		}
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
-
-	// procedure draws the cross to show where the pint is located
-/*bmWidth
-Задает ширину растрового изображения в пикселях. Ширина должна быть больше 0.
-bmHeight
-Задает высоту растрового изображения в линиях растра. Высота должна быть больше 0.
-bmWidthBytes
-Указывает число байтов в каждой линии растра. Это значение должно быть четным числом, поскольку приборный интерфейс (GDI) 
-графики высказывать значения в формы растрового изображения массив значений целого числа 2 (byte). 
-Другими словами, bmWidthBytes * 8 должны быть следующей несколько условных определений более 16 больше или равно 
-значению получена после выбора bmWidth умножен членом bmBitsPixel.
-bmPlanes
-Указывает число самолетов цвета в различных форматах.
-bmBitsPixel
-Указывает количество соседних бит цветов в каждом плоскости, необходимом для определения пиксель.
-bmBits
-Указывает на расположение значений бита для растрового изображения. Элемент bmBits должен быть указателем длинным к массиву значений 1 байта.
-*/
+//СЂРёСЃРѕРІР°РЅРёРµ РєСЂРµСЃС‚РёРєР°
 	void DrawCross(BYTE* pBits, int BytesPerPixel, LONG bmWidth, LONG bmHeight, int PixelX, int PixelY)
 	{
 		int stride = bmWidth + (bmWidth * BytesPerPixel) % 4;
@@ -228,30 +204,29 @@ bmBits
 		}
 	}
 
-	BOOL GrayscaleBitmap(HBITMAP hBitmap)//Назначение цветовых моделей
+	BOOL GrayscaleBitmap(HBITMAP hBitmap)
 	{
 		BOOL Result = FALSE;
 		BITMAP bitmap;
-		BYTE*  pBits;//1байт
+		BYTE*  pBits;//1Р±Р°Р№С‚
 
 		int hX = 0, hY = 0; // highest contrast pixel
 		BYTE hValue = 0;
 
-		// coping bitmap bits to buffer for modification
 		GetObject(hBitmap, sizeof(bitmap), &bitmap);
 
-		// allocate buffer for bitmap bits, dword=4байта без знака
+		//  dword=4Р±Р°Р№С‚Р° Р±РµР· Р·РЅР°РєР°
 		DWORD BitmapSizeInBytes = (bitmap.bmWidth * bitmap.bmBitsPixel + 31) / 8 * bitmap.bmHeight;
-		//количество байт в массиве цветов, ширина должна быть выровнена по DWORD
+		//РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚ РІ РјР°СЃСЃРёРІРµ С†РІРµС‚РѕРІ, С€РёСЂРёРЅР° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІС‹СЂРѕРІРЅРµРЅР° РїРѕ DWORD
 		pBits = new BYTE[BitmapSizeInBytes];
 		if (pBits)
 		{
 			if (GetBitmapBits(hBitmap, BitmapSizeInBytes, pBits))
 			{
-				int BytesPerPixel = bitmap.bmBitsPixel / 8;// подсчет количества пикселей в байтах
+				int BytesPerPixel = bitmap.bmBitsPixel / 8;// РїРѕРґСЃС‡РµС‚ РєРѕР»РёС‡РµСЃС‚РІР° РїРёРєСЃРµР»РµР№ РІ Р±Р°Р№С‚Р°С…
 				int stride = bitmap.bmWidth + (bitmap.bmWidth * BytesPerPixel) % 4;
-				// после палитры записывается  растр в виде байтового массива. 
-				//В битовом массиве последовательно записываются байты строк растра. Количество байт в строке должно быть кратно четырем 
+				// РїРѕСЃР»Рµ РїР°Р»РёС‚СЂС‹ Р·Р°РїРёСЃС‹РІР°РµС‚СЃСЏ  СЂР°СЃС‚СЂ РІ РІРёРґРµ Р±Р°Р№С‚РѕРІРѕРіРѕ РјР°СЃСЃРёРІР°. 
+				//Р’ Р±РёС‚РѕРІРѕРј РјР°СЃСЃРёРІРµ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕ Р·Р°РїРёСЃС‹РІР°СЋС‚СЃСЏ Р±Р°Р№С‚С‹ СЃС‚СЂРѕРє СЂР°СЃС‚СЂР°. РљРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚ РІ СЃС‚СЂРѕРєРµ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РєСЂР°С‚РЅРѕ С‡РµС‚С‹СЂРµРј 
 				for (int y = 0; y < bitmap.bmHeight; y++)
 				{
 					for (int x = 0; x < stride; x++)
@@ -293,7 +268,7 @@ bmBits
 	}
 };
 
-DWORD LoadPhoto(LPCTSTR FileName)//32-битное беззнаковое целое; const char*
+DWORD LoadPhoto(LPCTSTR FileName)//32-Р±РёС‚РЅРѕРµ Р±РµР·Р·РЅР°РєРѕРІРѕРµ С†РµР»РѕРµ; const char*
 {
 	DWORD Status = NO_ERROR;
 	
@@ -305,13 +280,13 @@ DWORD LoadPhoto(LPCTSTR FileName)//32-битное беззнаковое целое; const char*
 		PhotoWnd::hPhotoBitmap = NULL;
 	}
 
-	// загрузка растрового изображения из файла
+	// Р·Р°РіСЂСѓР·РєР° СЂР°СЃС‚СЂРѕРІРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РёР· С„Р°Р№Р»Р°
 	hBitmap =
 		(HBITMAP)LoadImage(
 			PhotoWnd::hInst,
 			FileName,
 			IMAGE_BITMAP, 0, 0, 
-			LR_LOADFROMFILE//флаг
+			LR_LOADFROMFILE//С„Р»Р°Рі
 		);
 
 	if (hBitmap && PhotoWnd::GrayscaleBitmap(hBitmap))
@@ -322,12 +297,12 @@ DWORD LoadPhoto(LPCTSTR FileName)//32-битное беззнаковое целое; const char*
 }
 
 
-HWND CreatePhotoWindow(HINSTANCE hInstance, HWND hParent)//дескриптором экземпляра окна
+HWND CreatePhotoWindow(HINSTANCE hInstance, HWND hParent)//РґРµСЃРєСЂРёРїС‚РѕСЂРѕРј СЌРєР·РµРјРїР»СЏСЂР° РѕРєРЅР°
 {
     // Register the window class.
     const wchar_t CLASS_NAME[]  = L"Capture Engine Photo Window Class";
     
-    WNDCLASS wc = { };//содержит атрибуты класса окна, которые зарегистрированы функцией RegisterClass.
+    WNDCLASS wc = { };//СЃРѕРґРµСЂР¶РёС‚ Р°С‚СЂРёР±СѓС‚С‹ РєР»Р°СЃСЃР° РѕРєРЅР°, РєРѕС‚РѕСЂС‹Рµ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅС‹ С„СѓРЅРєС†РёРµР№ RegisterClass.
 
 	PhotoWnd::hInst = hInstance;
 
